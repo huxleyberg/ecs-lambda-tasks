@@ -1,0 +1,35 @@
+Resources:
+  MyCluster:
+    Type: AWS::ECS::Cluster
+
+  MyTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: my-task
+      ContainerDefinitions:
+        - Name: my-container
+          Image: <ECR_IMAGE_URI>
+          PortMappings:
+            - ContainerPort: 8088
+
+  MyService:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster: !Ref MyCluster
+      DesiredCount: 1
+      TaskDefinition: !Ref MyTaskDefinition
+      LoadBalancers:
+        - TargetGroupArn: <TARGET_GROUP_ARN>
+          ContainerName: my-container
+          ContainerPort: 8088
+
+  MyScheduledRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: Schedule for running the ECS Fargate task
+      ScheduleExpression: cron(0 10 * * ? *) # Run every day at 10 am
+      State: ENABLED
+      Targets:
+        - Arn: !Ref MyService
+          Id: TriggerFargateTask
+          RoleArn: <IAM_ROLE_ARN>
