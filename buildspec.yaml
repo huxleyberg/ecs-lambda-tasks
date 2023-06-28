@@ -1,7 +1,7 @@
 version: 0.2
 env:
   variables:
-    ECR_REPOSITORY_NAME: ecs-fargate
+    ECR_REPOSITORY_NAME: goapp
 phases:
   pre_build:
     commands:
