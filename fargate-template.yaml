@@ -1,37 +1,18 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Parameters:
-  TaskDefinitionName:
-    Type: String
-    Default: ecsFargateTask
-  ClusterName:
-    Type: String
-    Default: ecsCluster
-  ServiceName:
-    Type: String
-    Default: ecs-fargate-service
-  ContainerName:
-    Type: String
-    Default: ecs-fargate-container
-  Image:
-    Type: String
-    Default: my-ecr-repo:latest
 Resources:
-  Cluster:
-    Type: AWS::ECS::Cluster
-    Properties:
-      ClusterName: !Ref ClusterName
   TaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
-      Family: !Ref TaskDefinitionName
+      Family: ecs-fargate-task-family
       Cpu: 256
       Memory: 512
       NetworkMode: awsvpc
       ExecutionRoleArn: !ImportValue codebuild-sample-ecs-service-role
+      TaskRoleArn: !ImportValue codebuild-sample-ecs-service-role
       RequiresCompatibilities:
         - FARGATE
       ContainerDefinitions:
-        - Name: !Ref ContainerName
+        - Name: ecs-fargate-container
           Image: !Sub ${AWS::AccountId}.dkr.ecr.us-east-1.amazonaws.com/ecs-fargate-task
           PortMappings:
             - ContainerPort: 80
@@ -39,8 +20,8 @@ Resources:
     Type: AWS::ECS::Service
     DependsOn: TaskDefinition
     Properties:
-      Cluster: !Ref Cluster
-      ServiceName: !Ref ServiceName
+      Cluster: !ImportValue apps-ecs-cluster
+      ServiceName: ecs-fargate-service
       DesiredCount: 1
       LaunchType: FARGATE
       DeploymentConfiguration:
@@ -49,8 +30,8 @@ Resources:
       NetworkConfiguration:
         AwsvpcConfiguration:
           AssignPublicIp: ENABLED
-          Subnets:
-            - vpcSubnet1
-            - vpcSubnet2
-          SecurityGroups:
-            - vpcSecurityGroup
+          # Subnets:
+          #   - vpcSubnet1
+          #   - vpcSubnet2
+          # SecurityGroups:
+          #   - vpcSecurityGroup

@@ -1,14 +1,20 @@
-# Use the official Golang base image
+# Start from a base Golang image
 FROM golang:1.17-alpine
 
-# Set the working directory
+# Set the working directory inside the container
 WORKDIR /app
 
-# Copy the source code to the working directory
+# Copy the Go module files
+COPY go.mod go.sum ./
+
+# Download and install Go dependencies
+RUN go mod download
+
+# Copy the source code to the container
 COPY . .
 
-# Build the Golang application
-RUN go build -o /main ./cmd/ecs-lambda-tasks-fargate/main.go
+# Build the Go application
+RUN go build -o myapp ./cmd/ecs-lambda-tasks-fargate/main.go
 
-# Set the command to run the application
-CMD ["/app/main"]
+# Set the command to run the executable
+CMD ["./myapp"]
